@@ -224,8 +224,23 @@ int main(int argc, char *argv[])
     // Check if the JSON file was modified
     if (!files_are_identical(temp_json_template, temp_json_backup_template))
     {
+        // Create a new temp file to store the changes
+        char temp_yaml_template[] = "/tmp/yedit_XXXXXX";
+        int temp_yaml_fd = mkstemp(temp_yaml_template);
+        if (temp_yaml_fd == -1)
+            die("Error creating temporary YAML file");
+        close(temp_yaml_fd);
         // Reconcile changes back to the original file
-        json_to_yaml(temp_json_template, original_file);
+        json_to_yaml(temp_json_template, temp_yaml_template);
+
+        // If we are successful, unlink the old file 
+        if (unlink(original_file) == -1)
+            die("Error unlinking original file");
+
+        // Rename the new file to the original file
+        if (rename(temp_yaml_template, original_file) == -1)
+            die("Error renaming temporary file");
+        
         printf("Changes saved to %s\n", original_file);
     }
     else
