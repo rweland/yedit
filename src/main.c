@@ -237,11 +237,13 @@ int main(int argc, char *argv[])
         if (unlink(original_file) == -1)
             die("Error unlinking original file");
 
-        // Rename the new file to the original file
-        if (rename(temp_yaml_template, original_file) == -1)
-            die("Error renaming temporary file");
-        
+        // Copy the new file to the original file
+        copy_file(temp_yaml_template, original_file);
+
         printf("Changes saved to %s\n", original_file);
+
+        // Clean up temporary yaml
+        unlink(temp_yaml_template);
     }
     else
     {
